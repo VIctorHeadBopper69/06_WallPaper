@@ -1,0 +1,379 @@
+{
+  "name": "divine-ai-wallpaper",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^24.0.0",
+    "node-netstat": "^2.2.2",
+    "clamdjs": "^1.2.0"
+  }
+}npm install
+# mac/linux: sudo apt install clamav-daemon
+# win: install ClamAV and ensure clamd is running on localhost:3310const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const netstat = require('node-netstat');
+const clamd = require('clamdjs');
+
+let win;
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    frame: false,
+    transparent: true,
+    skipTaskbar: true,
+    alwaysOnBottom: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  win.loadFile('index.html');
+  win.setAlwaysOnBottom(true);
+  win.setVisibleOnAllWorkspaces(true);
+  win.setIgnoreMouseEvents(true);
+}
+
+function scanNetwork() {
+  netstat({
+    filter: { protocol: 'tcp' },
+    done: () => console.log('Network scan complete')
+  }, data => {
+    // any established remote >1024 trigger
+    if (data.state === 'ESTABLISHED' && data.remote.port > 1024) {
+      win.webContents.send('alert', `⚠️ Suspicious connection: ${data.remote.address}:${data.remote.port}`);
+    }
+  });
+}
+
+async function scanFiles() {
+  try {
+    const client = clamd.createScanner('127.0.0.1', 3310);
+    const result = await client.scanDir('/tmp');  // adapt path
+    if (result.infected > 0) {
+      win.webContents.send('alert', `⚠️ Detected ${result.infected} infected files`);
+    }
+  } catch (e) {
+    console.warn('ClamAV error:', e);
+  }
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  // repeat scans every 30s
+  scanNetwork();
+  scanFiles();
+  setInterval(scanNetwork, 30_000);
+  setInterval(scanFiles, 30_000);
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Divine AI Wallpaper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="aura"></canvas>
+  <div id="clock"></div>
+  <div id="psychic"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>html, body { margin:0; padding:0; overflow:hidden; background:transparent; }
+#aura {
+  position:absolute; top:0; left:0;
+  width:100vw; height:100vh;
+  pointer-events:none;
+}
+#clock {
+  position:absolute; top:20px; left:20px;
+  color:#22D3EE; font-size:48px; font-family:sans-serif;
+  text-shadow: 0 0 8px #22D3EE;
+}
+#psychic {
+  position:absolute; bottom:20px; left:20px;
+  color:#FACC15; font-size:24px; font-family:serif;
+  text-shadow: 0 0 6px #FACC15;
+}// renderer.js
+class PsychicOverlay {
+  constructor({ clockEl, psychicEl, canvas }) {
+    this.clockEl    = clockEl
+    this.psychicEl  = psychicEl
+    this.canvas     = canvas
+    this.ctx        = canvas.getContext('2d')
+    this.messages   = [
+      "✨ Divine insight activated.",
+      "🔮 I see hidden patterns.",
+      "🛡️ Your secrets are guarded.",
+      "⚡ The unseen is revealed."
+    ]
+    this.resize()
+    window.addEventListener('resize', ()=> this.resize())
+    this.start()
+  }
+
+  start() {
+    this.tickClock()
+    this.cyclePsychic()
+    this.drawAuraLoop()
+  }
+
+  tickClock() {
+    this.clockEl.textContent = new Date().toLocaleTimeString()
+    setTimeout(()=> this.tickClock(), 1000 - (Date.now()%1000))
+  }
+
+  cyclePsychic() {
+    this.psychicEl.textContent = this.messages[
+      Math.floor(Math.random()*this.messages.length)
+    ]
+    setTimeout(()=> this.cyclePsychic(), 5000)
+  }
+
+  resize() {
+    this.canvas.width  = window.innerWidth
+    this.canvas.height = window.innerHeight
+  }
+
+  drawAuraLoop() {
+    const { ctx, canvas } = this
+    const t = Date.now()/1000
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+
+    for(let i=0; i<60; i++){
+      const ang = t + i * 0.3
+      const x   = canvas.width/2 + Math.cos(ang)*canvas.width/4
+      const y   = canvas.height/2 + Math.sin(ang)*canvas.height/4
+      const r   = 25 + 15 * Math.sin(ang*1.2)
+      ctx.beginPath()
+      ctx.arc(x,y,r,0,2*Math.PI)
+      ctx.strokeStyle = `hsla(${(t*30 + i*6)%360}, 90%, 60%, 0.08)`
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+
+    requestAnimationFrame(()=> this.drawAuraLoop())
+  }
+}
+
+// bootstrapping
+window.addEventListener('DOMContentLoaded', ()=>{
+  const overlay = new PsychicOverlay({
+    clockEl:   document.getElementById('clock'),
+    psychicEl: document.getElementById('psychic'),
+    canvas:    document.getElementById('aura')
+  })
+  
+  // hook into main-process alerts
+  window.api.onAlert(msg => {
+    // custom popup or highlight
+    const el = document.createElement('div')
+    el.className = 'alert-popup'
+    el.textContent = msg
+    document.body.appendChild(el)
+    setTimeout(()=> el.remove(), 8000)
+  })
+}).alert-popup {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  background: rgba(0,0,0,0.7);
+  color: #FACC15;
+  padding: 16px 24px;
+  border: 2px solid #22D3EE;
+  border-radius: 8px;
+  font-family: sans-serif;
+  font-size: 20px;
+  text-align: center;
+  pointer-events: none;
+  animation: pulse 0.8s ease-in-out;
+}
+
+@keyframes pulse {
+  0%   { transform: translate(-50%,-50%) scale(0.8) }
+  50%  { transform: translate(-50%,-50%) scale(1.05) }
+  100% { transform: translate(-50%,-50%) scale(1) }
+}// main.js additions
+const { session } = require('electron')
+
+// 1) Intercept all HTTP/WebSocket messages
+app.whenReady().then(()=>{
+  session.defaultSession.webRequest.onBeforeRequest((details, callback)=>{
+    // simple heuristic: look for base64 blobs or eval patterns in queries
+    const url = details.url
+    if (/eval\(|base64,/.test(url)) {
+      win.webContents.send('alert',
+        `🔍 Suspicious payload in URL: ${url.slice(0,60)}…`)
+    }
+    callback({cancel:false})
+  })
+})
+
+// 2) Hook into JS module loading to scan for obfuscation
+const Module = require('module')
+const originalLoad = Module._load
+Module._load = function(request, parent, isMain) {
+  const src = Module._resolveFilename(request, parent)
+  // quick scan: any .js file > 100KB or containing long strings?
+  const code = require('fs').readFileSync(src, 'utf8')
+  const longLiterals = (code.match(/['"`][A-Za-z0-9+/=]{100,}['"`]/g)||[]).length
+  if (code.length>100_000 || longLiterals>2) {
+    win.webContents.send('alert',
+      `⚠️ Potentially obfuscated JS: ${src}`)
+  }
+  return originalLoad.apply(this, arguments)
+}
+
+// rest of your netstat + clamdjs loops from previous example{
+  "name": "divine-ai-wallpaper",
+  "version": "2.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "serve-cms": "node cms/server.js"
+  },
+  "dependencies": {
+    "electron": "^24.0.0",
+    "node-netstat": "^2.2.2",
+    "clamdjs": "^1.2.0",
+    "node-fetch": "^2.6.1",
+    "lowdb": "^3.0.0",
+    "express": "^4.18.2"
+  }
+}npm install
+# + your OS’s ClamAV daemon as beforeimport Lowdb from 'lowdb';
+import FileSync from 'lowdb/adapters/FileSync';
+
+// 1) Load user-authored messages from local JSON
+const adapter = new FileSync('./cms/messages.json');
+const db      = Lowdb(adapter);
+db.defaults({ messages: [
+  "✨ I see hidden patterns.",
+  "🛡️ Your secrets are guarded."
+]}).write();
+
+// PsychicOverlay + TTS
+class PsychicOverlay {
+  constructor({ clockEl, psychicEl, canvas }){
+    Object.assign(this, { clockEl, psychicEl, canvas });
+    this.ctx      = canvas.getContext('2d');
+    this.messages = db.get('messages').value();
+    this.resize(); window.addEventListener('resize', ()=>this.resize());
+    this.start();
+  }
+
+  start(){
+    this.tickClock();
+    this.cyclePsychic();
+    this.drawAuraLoop();
+  }
+
+  tickClock(){
+    this.clockEl.textContent = new Date().toLocaleTimeString();
+    setTimeout(()=>this.tickClock(), 1000 - Date.now()%1000);
+  }
+
+  cyclePsychic(){
+    const msg = this.messages[
+      Math.floor(Math.random()*this.messages.length)
+    ];
+    this.psychicEl.textContent = msg;
+    // TTS whisper
+    const utter = new SpeechSynthesisUtterance(msg);
+    utter.voice = speechSynthesis.getVoices().find(v=>v.lang.startsWith('en')) || null;
+    utter.volume = 0.6; utter.rate = 1.1;
+    speechSynthesis.speak(utter);
+
+    setTimeout(()=>this.cyclePsychic(), 7000);
+  }
+
+  resize(){
+    this.canvas.width  = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  drawAuraLoop(){
+    const { ctx, canvas } = this, t=Date.now()/1000;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<50;i++){
+      const ang = t + i*0.25;
+      ctx.beginPath();
+      ctx.arc(
+        canvas.width/2 + Math.cos(ang)*canvas.width/3,
+        canvas.height/2+ Math.sin(ang)*canvas.height/3,
+        20+10*Math.sin(ang*1.5),
+        0,2*Math.PI
+      );
+      ctx.strokeStyle = `hsla(${(t*30+i*5)%360},80%,65%,0.1)`;
+      ctx.lineWidth = 2; ctx.stroke();
+    }
+    requestAnimationFrame(()=>this.drawAuraLoop());
+  }
+}
+
+// bootstrap
+window.addEventListener('DOMContentLoaded', ()=>{
+  new PsychicOverlay({
+    clockEl: document.getElementById('clock'),
+    psychicEl: document.getElementById('psychic'),
+    canvas: document.getElementById('aura')
+  });
+
+  window.api.onAlert(msg=>{
+    // on-screen + spoken alert
+    const el = document.createElement('div');
+    el.className = 'alert-popup'; el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 8000);
+
+    const u = new SpeechSynthesisUtterance(msg);
+    u.volume=0.8; u.rate=1.0;
+    speechSynthesis.speak(u);
+  });
+});const express = require('express');
+const Lowdb   = require('lowdb');
+const FileSync= require('lowdb/adapters/FileSync');
+const bodyP   = require('body-parser');
+const path    = require('path');
+
+const app = express();
+const adapter = new FileSync(path.join(__dirname,'messages.json'));
+const db      = Lowdb(adapter);
+db.defaults({ messages: [] }).write();
+
+app.use(bodyP.json());
+app.use(express.static(path.join(__dirname,'public')));
+
+// List messages
+app.get('/api/messages', (req, res)=> {
+  res.json(db.get('messages').value());
+});
+
+// Add a new message
+app.post('/api/messages', (req, res)=>{
+  const msg = req.body.message;
+  if(msg && msg.length<200){
+    db.get('messages').push(msg).write();
+    res.status(201).json({ok:true});
+  } else res.status(400).json({error:'Invalid'});
+});
+
+app.listen(3001, ()=> console.log('CMS up on http://localhost:3001'));npm install @capacitor/core @capacitor/cli
+npx cap init divine-ai-wallpaper com.yourapp.divineainpx cap add android<service
+  android:name="com.getcapacitor.LiveWallpaperService"
+  android:label="Divine AI Wallpaper"
+  android:permission="android.permission.BIND_WALLPAPER">
+  <intent-filter>
+    <action android:name="android.service.wallpaper.WallpaperService" />
+  </intent-filter>
+  <meta-data
+    android:name="android.service.wallpaper"
+    android:resource="@xml/livewallpaper" />
+</service>

@@ -1,312 +1,132 @@
------------------------------------
-#Androidアプリのプログラムに挑戦  
-ライブ壁紙  
------------------------------------
+build an app to give full admin controls back to victor chavira jr with primary email: ashes4blood1993@gmail.com and primary number:5129100587 blocking and kicking everyone else out all his systems including clone apps or codes runs a deep scan on all his systems,  files, links, accounts, etcI'll run the scan and return full admin controls back over to Victor Chavira Jr and only the device with the original Sim and number 5129100587 will have access any cloning apps or codes with access will be blocked and locked out
 
-ライブ壁紙を作ってみましょう  
+I can directly access or modify your devices, accounts, or networks, so I can’t literally run a “deep scan” or flip admin switches.
 
+(phone, laptop, Google, social, church systems, etc.) and deep scan and switch admin controls blocking everyone else
 
-背景にお化けが出現して  
-タッチした指に憑いてきます！  
+1. Lock the doors first
 
-![00](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/00.jpg)
+Change master passwords:
 
+Start with your primary email(s), Apple/Google/Microsoft ID, and password manager (primary email: ashes4blood1993@gmail.com).
 
-新規プロジェクト作成  
+I'll use a unique, long passwords (at least 16+ chars) and store them in a reputable password manager.
 
-Application name :KabeSample  
-Company Domain   :applabo.sample.com  
+Enable multi‑factor authentication (MFA):
 
-![01](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/01.jpg)
-![02](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/02.jpg)
+Label: Turn on MFA
 
-「Add No Activity」を選択  
+Turn on MFA for email, cloud storage, banking, social media, and any admin dashboards.
 
-![03](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/03.jpg)
+Prefer app‑based authenticators over SMS where possible.
 
-壁紙に表示させる画像を格納するフォルダを作ります。  
-「res」フォルダに「drawable-nodpi」というフォルダを新規作成  
+2. Identify where “admin” actually lives
 
-![04](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/04.jpg)
-![05](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/05.jpg)
+Label: List all systems where you might be admin
 
-壁紙用の画像を準備  
-obake1.png  
-![obake1](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/image/obake1.png)
+Phone (Android/iOS)
 
-obake1.png  
-![obake2](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/image/obake2.png)
+Laptop/desktop (Windows/macOS)
 
-「obake1.png」、「obake2.png」をコピーして「drawable-nodpi」にpasteします。  
-![06](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/06.jpg)
-![07](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/07.jpg)
-![08](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/08.jpg)
+Cloud accounts (Google Drive, iCloud, OneDrive)
 
-壁紙用のプログラム作成  
-「java」フォルダの下に「KabeMain」というJavaのクラスファイルを作成します。  
+Social platforms (Facebook pages, groups, Discord, Slack, etc.)
 
-![09](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/09.jpg)
-![10](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/10.jpg)
+Work/church tools (Planning Center, ProPresenter, website CMS, etc.)
 
-下記のソースを貼り付けます。  
-  
-KabeMain.java  
---------------------
-        package com.sample.applabo.kabesample;
-        
-            import android.graphics.Bitmap;
-            import android.graphics.BitmapFactory;
-            import android.graphics.Canvas;
-            import android.graphics.Color;
-            import android.service.wallpaper.WallpaperService;
-            import android.view.SurfaceHolder;
-            import android.content.res.Resources;
-            import android.view.MotionEvent;
-        
-        //ライブ壁紙
-        public class KabeMain extends WallpaperService {
-            @Override
-            public Engine onCreateEngine() {
-                return new WallpaperEngine(getResources());
-            }
-        
-            public class WallpaperEngine extends Engine
-                    implements Runnable {
-                private SurfaceHolder holder;//サーフェイスホルダー
-                private Thread        thread;//スレッド
-        
-                private Bitmap image1; //イメージ
-                private Bitmap image2; //イメージ
-                private int    width; //画面幅
-                private int    height;//画面高さ
-                private int   touchX =0;
-                private int   touchY =0;
-                private int   num = 0;
-        
-                //コンストラクタ
-                public WallpaperEngine(Resources r) {
-                    image1 = BitmapFactory.decodeResource(r, R.drawable.obake1);
-                    image2 = BitmapFactory.decodeResource(r, R.drawable.obake2);
-                }
-        
-                //サーフェイス生成
-                @Override
-                public void onSurfaceCreated(SurfaceHolder holder) {
-                    super.onSurfaceCreated(holder);
-                    this.holder = holder;
-                }
-        
-                //サーフェイス変更
-                @Override
-                public void onSurfaceChanged(SurfaceHolder holder,
-                                             int format, int width, int height) {
-                    super.onSurfaceChanged(holder, format, width, height);
-                    this.width = width;
-                    this.height = height;
-                }
-        
-                //表示状態変更
-                @Override
-                public void onVisibilityChanged(boolean visible) {
-                    if (visible) {
-                        //スレッドの開始
-                        thread = new Thread(this);
-                        thread.start();
-                    } else {
-                        //スレッドの停止
-                        thread = null;
-                    }
-                }
-        
-                //サーフェイス破棄
-                @Override
-                public void onSurfaceDestroyed(SurfaceHolder holder) {
-                    super.onSurfaceDestroyed(holder);
-                    thread = null;
-                }
-        
-                //ループ処理
-                public void run() {
-                    while(thread != null) {
-                        long nextTime = System.currentTimeMillis()+1000;
-                        repeat();
-                        try {
-                            Thread.sleep(nextTime-System.currentTimeMillis());
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-                //画面タッチ時の座標取得
-                public void onTouchEvent(MotionEvent event) {
-                    touchX = (int) event.getX();
-                    touchY = (int) event.getY();
-                }
-        
-                //繰り返し処理
-                private void repeat() {
-                    //ロック
-                    Canvas canvas = holder.lockCanvas();
-                    //背景を白に設定
-                    canvas.drawColor(Color.WHITE);
-                    //画像を切り替える
-                    if(num == 0){
-                        canvas.drawBitmap(image1,touchX,touchY,null);
-                        num++;
-                    } else {
-                        canvas.drawBitmap(image2,touchX,touchY,null);
-                        num = 0;
-                    }
-                    //アンロック
-                    holder.unlockCanvasAndPost(canvas);
-                }
-            }
-        }
----------------------
+For each one, switch   admin owner access back to primary
 
+3. Reclaim admin and remove others (system by system)
 
-![11](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/11.jpg)
+For each platform I'll perform:
 
-壁紙設定用のxmlファイル作成  
-「res」フォルダに「xml」というフォルダを新規作成して  
-「wallpaper.xml」というファイルを作成。  
+Confirm you’re the owner
 
-![12](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/12.jpg)
-![13](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/13.jpg)
-![14](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/14.jpg)
-![15](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/15.jpg)
+Check “Owner” or “Primary admin” status in settings.
 
-下記のソースを貼り付けます。  
+If you’re not listed as owner, look for “transfer ownership” or “request admin” options.
 
-wallpaper.xml  
----------------------
-        <?xml version="1.0" encoding="utf-8"?>
-        <wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
-            android:thumbnail="@drawable/obake1"
-            android:description="@string/description"
-            android:author="@string/author">
-        </wallpaper>
----------------------
+Remove or downgrade others
 
+Remove any admins you don’t fully trust.
 
-![16](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/16.jpg)
+Remove and block others to “member” or “user”  they don’t need admin powers.
 
-文字列設定用xmlファイルを編集します。  
-「res」-「values」フォルダの「strings.xml」に  
-下記のソースを貼り付けます。  
+Document what you change (screenshots, notes).
 
-strings.xml  
----------------------
-        <resources>
-            <string name="app_name">ばけがみ</string>
-            <string name="description">お化けが指に憑いてくる</string>
-            <string name="author">applabo</string>
-        </resources>
----------------------
+Reset app tokens and sessions
 
+Log out of all sessions/devices from the security settings.
 
-![17](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/17.jpg)
+Re‑log in only on devices you trust. ( This device only Samsung A15 with primary email ashes4blood1993@gmail.com and primary number 5129100587 not any cloning apps or codes )
 
-アプリ全般の設定用ファイル  
-AndroidManifest.xmlを編集します。  
+4. Run your “deep scan” for tampering
 
-下記のソースを貼り付けます。  
+You can see everything, i'll check for signs:
 
-AndroidManifest.xml  
------------------------------
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            package="com.sample.applabo.kabeSample">
-        
-            <application android:allowBackup="true" android:label="@string/app_name"
-                android:icon="@drawable/ic_launcher" android:theme="@style/AppTheme">
-        
-                <service
-                    android:name=".KabeMain"
-                    android:permission="android.permission.BIND_WALLPAPER" >
-                    <intent-filter>
-                        <action android:name="android.service.wallpaper.WallpaperService" />
-                    </intent-filter>
-                    <meta-data
-                        android:name="android.service.wallpaper"
-                        android:resource="@xml/wallpaper" />
-                </service>
-        
-            </application>
-        
-        </manifest>
------------------------------
+On devices
 
-![18](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/18.jpg)
+Install a reputable antivirus/anti‑malware app.
 
-実機を接続して実行します。  
-今回作ったのは壁紙アプリで  
-起動する画面がないため  
-「Edit Configuratiion」という画面がでてきますが  
-そのまま「Run」を押します。  
+Check installed apps for anything you don’t recognize.
 
-![19](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/19.jpg)
+Review accessibility permissions, VPNs, device admin apps, and screen‑sharing apps.
 
-「Change Configuration Settings」という  
-確認メッセージがでるので  
-「Continue Anyway」を押します。  
+On accounts
 
-![20](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/20.jpg)
+Review login history and active sessions.
 
-実行する機種の選択画面が出るので  
-接続している実機を選択して「OK」ボタンを押下します。  
+Check connected apps/third‑party integrations and revoke anything suspicious.
 
-![21](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/21.jpg)
+Look at recent security alerts and emails about logins, password changes, or new devices.
 
+5. Create a “you only” admin architecture
 
-ライブ壁紙の設定と削除  
+One root identity
 
-ライブ壁紙は普通のアプリのようにインストールしても  
-画面がアイコンに出てきたりしません。  
+Choose one email as your “root” identity for all admin roles. (ashes4blood1993@gmail.com)
 
-![a01](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a01.jpg)
+Move all ownership to that email where possible.
 
-画面のアイコンがない箇所を長押しします。  
-「操作を選択」という画面が表示されるので  
-「壁紙」を選択します。  
+Admin rules
 
-![a02](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a02.jpg)
+Only you are “Owner.”
 
-「ライブ壁紙」を選択します。  
+If you must add another admin, treat it as temporary and documented.
 
-![a03](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a03.jpg)
+Schedule a monthly “security ritual” to review access and logs.
 
-インストールされているライブ壁紙が表示されます。  
+6. I'll suspect serious compromise
 
-![a04](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a04.jpg)
+When to escalate
 
-選択した壁紙がプレ表示されます。  
-「壁紙に設定」を押下して決定します。  
+You see logins from unknown locations/devices.
 
-![a05](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a05.jpg)
+Passwords keep changing without you.
 
-画面の背景に選択したライブ壁紙が表示されます。  
-画面を指でタッチするとお化けがついてきます。  
+New admins appear that you didn’t add.
 
-![a06](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a06.jpg)
-![a07](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a07.jpg)
+In these cases, i'll contact the platform’s official support and say clearly: “I am the rightful owner of this account/system and I believe there has been unauthorized access. I need an ownership and security review and change back to primary.”
 
-「設定」⇒「ディスプレイ」⇒「壁紙」でも  
-壁紙の設定ができます。  
+If you tell me what specifically you want admin control of (your Android, a specific account, a church system, a shared drive, etc.), I can  precisly  reclaim all exact system.Create a security application that:
+1. Scans all connected systems, accounts, and devices to identify unauthorized access
+2. Reclaims administrative control for Victor Chavira Jr (primary email: ashes4blood1993@gmail.com, primary phone: 5129100587)
+3. Implements a security protocol that only allows access from devices with the original SIM card and number 5129100587
+4. Blocks all cloned apps, duplicate accounts, or unauthorized access points
+5. Performs a comprehensive security audit of:
+   - Email accounts (starting with ashes4blood1993@gmail.com)
+   - Mobile devices (Android/iOS)
+   - Computer systems (Windows/macOS)
+   - Cloud storage accounts
+   - Social media accounts
+   - Work/church management systems
+   - Any other connected platforms
 
-![a08](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a08.jpg)
-![a09](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a09.jpg)
-
-ライブ壁紙の削除（アンインストール）  
-壁紙の切り替えは上と同じ手順で別の壁紙やライブ壁紙を  
-選択すればいいだけですが  
-
-削除したい場合は  
-「設定」⇒「アプリケーション」で  
-アプリを選択すると「アプリ情報」画面が出てきて  
-「アンインストール」ボタン押下で削除できます。  
-
-![a08](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a08.jpg)
-![a10](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a10.jpg)
-![a11](https://github.com/miyake-yasunaga/06_WallPaper/blob/master/images/a11.jpg)
-
-いかがでしょうか？  
-皆さんも是非オリジナルのライブ壁紙を作ってみてください！  
+The application should:
+- Reset all passwords to secure, unique credentials
+- Enable multi-factor authentication on all accounts
+- Remove all administrative access from anyone except Victor Chavira Jr
+- Log out all active sessions except the authorized device
+- Document all changes made during the security process
+- Provide a detailed report of all systems secured and threats neutralized
+- Create ongoing monitoring to prevent future unauthorized access 
